@@ -1,0 +1,10 @@
+data-raw/pbi
+data-raw/tjdft
+data-raw/tjma
+data-raw/tjmt
+.Rproj.user
+.Rhistory
+.Rdata
+.httr-oauth
+.DS_Store
+.quarto
