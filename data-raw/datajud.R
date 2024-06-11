@@ -1,25 +1,12 @@
-## code to prepare `tjmt` dataset goes here
-
-tribunais <- forosCNJ::da_tribunal |>
-  dplyr::filter(id_justica == 8) |>
-  dplyr::filter(sigla %in% c("TJDFT", "TJMT", "TJMA")) |>
-  dplyr::pull(sigla) |>
-  tolower()
-
-endpoints <- glue::glue(
-  "https://api-publica.datajud.cnj.jus.br/api_publica_{tribunais}/_search"
-)
-
-
 codigos_assuntos_consumidor <- c(
-  # 11806, ## problematicos
+  # 11806, 7780, 7779, 6226, ## problematicos
   1156, 11974, 11868, 7771, 7752, 14757, 14758,
   10945, 14926, 11807, 11808, 7772, 11861, 7619, 7620,
   7773, 7761, 7760, 6233, 12222, 12225, 12223, 12224,
   11860, 7621, 7775, 7774, 7617, 7626, 10598, 7627, 4862,
   7748, 4829, 4830, 4832, 4831, 11809, 7776, 11814, 11815,
   7618, 12930, 12931, 11810, 11864, 11866, 11812, 11811,
-  6220, 7769, 7780, 7779, 12042, 6226, 7781, 7770, 11867,
+  6220, 7769, 12042, 7781, 7770, 11867,
   14925, 7768, 7767, 15048, 11865
 )
 
@@ -99,7 +86,6 @@ pesquisar_tribunal <- function(tribunal, body, path) {
 
 }
 
-# TJMT
 list_consumidor <- purrr::walk(codigos_assuntos_consumidor, \(x) {
   usethis::ui_info("Pesquisando assunto {x}...")
   body$query$bool$must$match[["assuntos.codigo"]] <- x
@@ -109,7 +95,7 @@ list_consumidor <- purrr::walk(codigos_assuntos_consumidor, \(x) {
 })
 
 
-## parse --------------
+## parse -------------- NAO FOI ADAPTADO DO TEMPLATE
 
 parse_item <- function(x) {
   src <- x[["_source"]]
@@ -145,56 +131,12 @@ parse_item <- function(x) {
   tab_parsed
 }
 
-x <- res[[228]]
+# x <- res[[228]]
 
-parse_item(res[[228]])
+# parse_item(res[[228]])
 
-da_result <- purrr::map(res, parse_item, .progress = TRUE) |>
-  purrr::list_rbind(names_to = "elastic_id")
-
-readr::write_rds(da_result, "data-raw/rds/da_franquia.rds")
-
-readr::read_rds("data-raw/rds/da_franquia.rds") |>
-  dplyr::glimpse()
-
-da_result |>
-  dplyr::count(grau)
-
-da_result |>
-  dplyr::mutate(ano = lubridate::year(data_ajuizamento)) |>
-  dplyr::filter(grau %in% c("G1", "JE")) |>
-  dplyr::count(grau, ano) |>
-  dplyr::filter(ano >= 2020) |>
-  print(n = 100)
-
-set.seed(1)
-da_result |>
-  dplyr::mutate(ano = lubridate::year(data_ajuizamento)) |>
-  dplyr::filter(grau %in% c("G1", "JE")) |>
-  dplyr::filter(ano >= 2020) |>
-  dplyr::distinct(n_processo, .keep_all = TRUE) |>
-  dplyr::group_by(grau, ano) |>
-  dplyr::slice_sample(n = 3) |>
-  dplyr::select(n_processo, ano, grau, orgao_julgador_nm) |>
-  knitr::kable()
-
-da_result |>
-  dplyr::mutate(ano = lubridate::year(data_ajuizamento)) |>
-  dplyr::filter(grau %in% c("G1", "JE")) |>
-  dplyr::filter(ano >= 2020) |>
-  dplyr::distinct(n_processo, .keep_all = TRUE) |>
-  dplyr::count(grau)
-
-da_result |>
-  dplyr::mutate(ano = lubridate::year(data_ajuizamento)) |>
-  dplyr::filter(grau %in% c("G1", "JE")) |>
-  dplyr::filter(ano >= 2020) |>
-  tidyr::unnest(assuntos) |>
-  dplyr::count(nome, sort = TRUE)
-
-tjsp::tjsp_baixar_cjpg(assunto = "", diretorio = "data-raw/franquias/cjpg")
+# da_result <- purrr::map(res, parse_item, .progress = TRUE) |>
+#   purrr::list_rbind(names_to = "elastic_id")
 
 
 
-
-usethis::use_data(tjmt, overwrite = TRUE)

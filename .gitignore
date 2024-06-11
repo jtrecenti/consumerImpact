@@ -8,3 +8,6 @@ data-raw/tjmt
 .httr-oauth
 .DS_Store
 .quarto
+data-raw/tjdft.zip
+data-raw/tjma.zip
+data-raw/tjmt.zip
